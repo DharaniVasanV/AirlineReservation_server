@@ -57,6 +57,10 @@ const flightSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  flightDate: {
+    type: Date,
+    required: true
+  },
   price: {
     type: Number,
     required: true
@@ -139,6 +143,11 @@ const reservationSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: true
+  },
+  passportNumber: {
+    type: String,
+    required: true,
+    trim: true
   }
 }, {
   timestamps: true

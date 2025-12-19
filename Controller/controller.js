@@ -127,6 +127,12 @@ export const searchFlights = async (req, res) => {
     
     if (departure) query.departure = new RegExp(departure, 'i');
     if (destination) query.destination = new RegExp(destination, 'i');
+    if (date) {
+      const searchDate = new Date(date);
+      const nextDay = new Date(searchDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      query.flightDate = { $gte: searchDate, $lt: nextDay };
+    }
     
     const flights = await Flight.find(query);
     res.json({ success: true, data: flights });
@@ -164,7 +170,7 @@ export const deleteFlight = async (req, res) => {
 // Add new reservation
 export const addReservation = async (req, res) => {
   try {
-    const { passengerName, email, phone, flightId, seatNumber } = req.body;
+    const { passengerName, email, phone, flightId, seatNumber, passportNumber } = req.body;
     const userId = req.user.userId;
     
     const flight = await Flight.findById(flightId);
@@ -185,12 +191,13 @@ export const addReservation = async (req, res) => {
       flightNumber: flight.flightNumber,
       departure: flight.departure,
       destination: flight.destination,
-      departureDate: new Date(),
+      departureDate: flight.flightDate,
       seatNumber,
       bookingReference,
       userId,
       flightId,
-      price: flight.price
+      price: flight.price,
+      passportNumber
     });
 
     await newReservation.save();
