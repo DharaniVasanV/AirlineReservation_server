@@ -14,7 +14,7 @@ import {
   getUserReservations,
   getReservationByReference, 
   updateReservationStatus 
-} from '../Controller/Controller.js';
+} from '../Controller/controller.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
