@@ -170,7 +170,7 @@ export const deleteFlight = async (req, res) => {
 // Add new reservation
 export const addReservation = async (req, res) => {
   try {
-    const { passengerName, email, phone, flightId, seatNumber, passportNumber } = req.body;
+    const { passengerName, email, phone, flightId, seatNumber, passportNumber, aadharNumber } = req.body;
     const userId = req.user.userId;
     
     const flight = await Flight.findById(flightId);
@@ -197,7 +197,8 @@ export const addReservation = async (req, res) => {
       userId,
       flightId,
       price: flight.price,
-      passportNumber
+      passportNumber: flight.country?.toLowerCase() === 'india' ? undefined : passportNumber,
+      aadharNumber: flight.country?.toLowerCase() === 'india' ? aadharNumber : undefined
     });
 
     await newReservation.save();

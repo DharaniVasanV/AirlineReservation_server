@@ -49,6 +49,10 @@ const flightSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  country: {
+    type: String,
+    required: true
+  },
   departureTime: {
     type: String,
     required: true
@@ -146,7 +150,10 @@ const reservationSchema = new mongoose.Schema({
   },
   passportNumber: {
     type: String,
-    required: true,
+    trim: true
+  },
+  aadharNumber: {
+    type: String,
     trim: true
   }
 }, {
