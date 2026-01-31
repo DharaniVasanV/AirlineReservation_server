@@ -335,3 +335,81 @@ export const updateReservationStatus = async (req, res) => {
     });
   }
 };
+
+// Get occupied seats for a flight
+export const getOccupiedSeats = async (req, res) => {
+  try {
+    const { flightId } = req.params;
+    const reservations = await Reservation.find({ 
+      flightId, 
+      seatNumber: { $ne: 'Not Assigned', $ne: '' } 
+    }).select('seatNumber');
+    
+    const occupiedSeats = reservations.map(r => r.seatNumber).filter(seat => seat);
+    
+    res.json({ 
+      success: true, 
+      data: occupiedSeats 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+};
+
+// Cancel reservation
+export const cancelReservation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    // Find the reservation first
+    const reservation = await Reservation.findById(id);
+    if (!reservation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reservation not found'
+      });
+    }
+
+    // Check if user owns the reservation or is admin
+    if (userRole !== 'admin' && reservation.userId.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only cancel your own reservations'
+      });
+    }
+
+    // Only allow cancellation of unconfirmed bookings
+    if (reservation.status === true) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot cancel confirmed bookings. Please contact support.'
+      });
+    }
+
+    // Delete the reservation
+    await Reservation.findByIdAndDelete(id);
+    
+    // Restore available seats
+    const flight = await Flight.findById(reservation.flightId);
+    if (flight) {
+      flight.availableSeats += 1;
+      await flight.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Reservation cancelled successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling reservation',
+      error: error.message
+    });
+  }
+};
